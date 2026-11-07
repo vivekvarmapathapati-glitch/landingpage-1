@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DayBoard – daily activity, journal and to-do dashboard</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1b2330;--mu:#677284;--bd:#e0e4ea;--ac:#3b5bdb;--acs:#e8edff;--ac2:#0f9d8a;--ok:#17a34a;--wr:#d97706;--on:#fff;--bl:36%;--r:12px}
+[data-theme=dark]{--bg:#11151b;--card:#1a2029;--tx:#e6eaf0;--mu:#97a1b1;--bd:#2b3340;--ac:#8fa5ff;--acs:#252d4d;--ac2:#3fd0bb;--ok:#4ade80;--wr:#fbbf24;--on:#11151b;--bl:72%}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5}
+h1{font-size:19px;margin:0 6px 0 0}h2{font-size:16px;margin:0}.sp{flex:1}.mu{color:var(--mu)}
+.b{font:inherit;font-size:14px;padding:7px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);cursor:pointer;transition:border-color .15s,background .15s}
+.b:hover:not(:disabled){border-color:var(--ac)}.b:disabled{opacity:.35;cursor:default}
+.b:focus-visible,.dy:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.pr{background:var(--ac);border-color:var(--ac);color:var(--on)}.sm{padding:3px 8px;font-size:13px}
+main{max-width:1180px;margin:0 auto;padding:16px;display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:16px}
+.grid{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);align-items:start}
+@media(min-width:900px){.grid{grid-template-columns:330px minmax(0,1fr)}}
+.col,aside{display:grid;gap:16px;min-width:0}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.big{font-size:22px}
+.st{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-top:10px}
+.st div{background:var(--bg);border-radius:10px;padding:8px 12px}.st b{display:block;font-size:20px}.st span{font-size:12px;color:var(--mu)}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}.cg i{font-style:normal;font-size:12px;color:var(--mu)}
+.dy{aspect-ratio:1;border:1px solid transparent;border-radius:9px;background:none;color:var(--tx);font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0}
+.dy:hover{background:var(--acs)}.dy.td{border-color:var(--ac);font-weight:700}.dy.sel{background:var(--ac);color:var(--on)}
+u{display:flex;gap:3px;height:6px}em{width:6px;height:6px;border-radius:50%;display:inline-block}
+.da{background:var(--ac)}.dc{background:var(--ok)}.sel .da{background:var(--on)}.sel .dc{background:#86efac}.dr{background:var(--wr)}.sel .dr{background:#fcd34d}.dy.rm{box-shadow:inset 0 -3px 0 var(--wr)}.it.hl{border-color:var(--wr)}small{color:var(--mu)}.two{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}@media(min-width:900px){.two{grid-template-columns:1fr 1fr}}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.lg{font-size:12px;color:var(--mu);margin-top:8px}
+.it{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;padding:10px;border:1px solid var(--bd);border-radius:10px;margin-bottom:8px}
+.it .m{flex:1 1 120px;min-width:0}.it p{margin:2px 0 0;color:var(--mu);font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
+.it.dn .t,.it.off .t{color:var(--mu)}.it.dn .t{text-decoration:line-through}.it.dn{opacity:.75}
+input[type=checkbox]{width:18px;height:18px;margin:3px 0 0;accent-color:var(--ac)}
+.bg{font-size:11px;padding:1px 8px;border-radius:99px;background:hsl(var(--h) 70% 50%/.16);color:hsl(var(--h) 60% var(--bl));white-space:nowrap}
+.pb{height:8px;background:var(--bg);border-radius:9px;overflow:hidden}.pb i{display:block;height:100%;background:var(--ac2);transition:width .3s}
+.tb{display:flex;gap:4px;margin:12px 0}.tb button{font:inherit;font-size:13px;padding:4px 12px;border:1px solid var(--bd);border-radius:99px;background:none;color:var(--mu);cursor:pointer}
+.tb .on{background:var(--acs);color:var(--ac);border-color:var(--ac)}
+dialog{border:1px solid var(--bd);border-radius:14px;padding:20px;width:min(440px,92vw);background:var(--card);color:var(--tx)}
+dialog::backdrop{background:rgba(0,0,0,.45)}dialog h3{margin:0 0 12px}
+label{display:block;font-size:13px;color:var(--mu);margin-bottom:10px}
+dialog input,dialog select,dialog textarea{display:block;width:100%;margin-top:4px;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px}
+.bt{display:flex;justify-content:flex-end;gap:8px}.er{color:#dc2626;margin:0 0 8px;min-height:1em;font-size:13px}
+footer{max-width:1180px;margin:0 auto;padding:0 16px 24px;font-size:12px;color:var(--mu)}
+</style></head><body>
+<header><h1>DayBoard</h1><span class="mu" id="now"></span><span class="sp"></span>
+<button class="b" data-a="today">Today</button><button class="b" data-a="theme">Light / dark</button>
+<button class="b" data-a="export">Export</button><button class="b" data-a="pick">Import</button>
+<input type="file" id="imp" accept=".json,application/json" hidden></header>
+<main>
+<section class="card" id="ov"></section>
+<div class="grid">
+<aside><div class="card" id="cal"></div><div class="card" id="rm"></div></aside>
+<div class="col"><div class="card" id="act"></div><div class="card" id="td"></div></div>
+</div>
+<div class="two"><div class="card" id="rt"></div><div class="card" id="hb"></div></div></main>
+<footer>Your data is saved in this browser's localStorage only. It is not synced between devices or browsers, and clearing site data deletes it. Use Export regularly to keep a backup.</footer>
+<dialog id="dlg"><form id="fm"></form></dialog>
+<script>
+/* ---------- Helpers ---------- */
+const KEY='dayboard.v1', NEWC='+ New category…';
+const DEFCATS=['Academics','Programming','Projects','Classes and Lectures','Personal Development','Exercise and Fitness','Personal','Other'];
+const PH={Low:150,Medium:40,High:0}, RH={Birthday:330,Deadline:0,Event:200,Other:260};
+const defHabits=()=>['Pushups','No social media'].map(title=>({id:uid(),title}));
+const $=s=>document.querySelector(s), dlg=$('#dlg');
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;   // local date key, never UTC
+const parse=k=>{const[a,b,c]=k.split('-').map(Number);return new Date(a,b-1,c)};
+const yest=()=>{const d=new Date();d.setDate(d.getDate()-1);return ymd(d)};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DATE=/^\d{4}-\d{2}-\d{2}$/;
+
+/* ---------- Data model & storage ----------
+ S = { v, theme, categories:[], habits:[{id,title,gone}], reminders:[{id,title,date,type,yr,note}],
+       days:{ 'YYYY-MM-DD': { activities:[{id,title,cat,desc,time}], tasks:[{id,title,done,pri,desc}],
+                              routine:[{id,title,done}]  (this date only),  hb:{habitId:1}  (consistency check-ins) } } } */
+function fresh(){return{v:2,theme:matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light',categories:[...DEFCATS],habits:defHabits(),reminders:[],days:{}}}
+function valid(o){return !!o&&typeof o==='object'&&!!o.days&&typeof o.days==='object'&&!Array.isArray(o.days)&&
+ Object.entries(o.days).every(([k,d])=>DATE.test(k)&&d&&typeof d==='object')}
+function norm(o){const ok=x=>x&&typeof x.title==='string'&&typeof x.id==='string',arr=a=>Array.isArray(a)?a:[];
+ o.v=2;o.theme=o.theme==='dark'?'dark':'light';
+ o.categories=[...new Set(arr(o.categories).filter(c=>typeof c==='string'&&c.trim()).concat(DEFCATS))];
+ if(Array.isArray(o.routine)){   // migrate old recurring templates into per-date lists (history kept)
+  const old=o.routine.filter(r=>ok(r)&&DATE.test(r.from)),t=ymd(new Date());
+  for(const[k,d]of Object.entries(o.days)){const rd=d.rd||{};if(Object.keys(rd).length)d.routine=old.filter(r=>rd[r.id]||(k>=r.from&&(!r.to||k<=r.to))).map(r=>({id:r.id,title:r.title,done:!!rd[r.id]}))}
+  if(!(o.days[t]&&o.days[t].routine))(o.days[t]=o.days[t]||{}).routine=old.filter(r=>r.from<=t&&!r.to&&!r.gone).map(r=>({id:r.id,title:r.title,done:false}));
+  delete o.routine}
+ o.habits=Array.isArray(o.habits)?o.habits.filter(ok):defHabits();
+ o.reminders=arr(o.reminders).filter(r=>ok(r)&&DATE.test(r.date||'')).map(r=>({...r,yr:!!r.yr,type:r.type in RH?r.type:'Other'}));
+ for(const d of Object.values(o.days)){d.activities=arr(d.activities).filter(ok).map(a=>({...a,cat:a.cat||'Other'}));
+  d.tasks=arr(d.tasks).filter(ok);d.routine=arr(d.routine).filter(ok).map(r=>({id:r.id,title:r.title,done:!!r.done}));
+  d.hb=d.hb&&typeof d.hb==='object'?d.hb:{};delete d.rd;
+  d.activities.forEach(a=>{if(!o.categories.includes(a.cat))o.categories.push(a.cat)})}
+ return o}
+function load(){let raw=null;try{raw=localStorage.getItem(KEY);if(raw){const o=JSON.parse(raw);if(valid(o))return norm(o);throw 0}}
+ catch(e){try{localStorage.setItem(KEY+'.corrupt',raw)}catch(_){}}   // keep unreadable data instead of destroying it
+ return fresh()}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){alert('Could not save: browser storage is full or blocked. Export your data now.')}};
+let S=load(),sel=ymd(new Date()),view=parse(sel),flt='all';view.setDate(1);
+
+const day=k=>S.days[k]||(S.days[k]={activities:[],tasks:[],routine:[],hb:{}});   // create only when writing
+const remOn=(r,k)=>r.date===k||(r.yr&&k>r.date&&r.date.slice(5)===k.slice(5));
+const nextOn=(r,t)=>{if(!r.yr)return r.date;const y=+t.slice(0,4);let c=y+r.date.slice(4);if(c<t)c=(y+1)+r.date.slice(4);return c<r.date?r.date:c};
+function items(k){const d=S.days[k]||{tasks:[],routine:[]};
+ return d.routine.map(r=>({id:r.id,title:r.title,rt:1,done:!!r.done})).concat(d.tasks.map(t=>({...t,done:!!t.done})))}
+const hue=c=>(Math.max(0,S.categories.indexOf(c))*47+235)%360;
+const btns=(t,id)=>`<button class="b sm" data-a="edit${t}" data-id="${id}">Edit</button><button class="b sm" data-a="del${t}" data-id="${id}">Delete</button>`;
+const commit=()=>{save();render()};
+
+/* ---------- Rendering ---------- */
+function render(){document.documentElement.dataset.theme=S.theme;renderCal();renderOv();renderAct();renderTd();renderRt();renderHb();renderRm()}
+function renderCal(){const y=view.getFullYear(),m=view.getMonth(),first=new Date(y,m,1).getDay(),n=new Date(y,m+1,0).getDate(),t=ymd(new Date());
+ let h=`<div class="ch"><button class="b sm" data-a="pm" aria-label="Previous month">‹</button><b>${view.toLocaleString('en',{month:'long'})} ${y}</b><button class="b sm" data-a="nm" aria-label="Next month">›</button></div><div class="cg">`+[...'SMTWTFS'].map(d=>`<i>${d}</i>`).join('');
+ for(let i=0;i<first;i++)h+='<span></span>';
+ for(let d=1;d<=n;d++){const k=`${y}-${pad(m+1)}-${pad(d)}`,o=S.days[k],a=o&&o.activities.length,c=o&&(o.tasks.some(x=>x.done)||o.routine.some(x=>x.done)||Object.keys(o.hb).length),rs=S.reminders.filter(r=>remOn(r,k));
+  h+=`<button class="dy${k===t?' td':''}${k===sel?' sel':''}${rs.length?' rm':''}" data-k="${k}" aria-label="${k}"${rs.length?` title="${esc(rs.map(r=>r.title).join(', '))}"`:''}>${d}<u>${a?'<em class="da"></em>':''}${c?'<em class="dc"></em>':''}${rs.length?'<em class="dr"></em>':''}</u></button>`}
+ $('#cal').innerHTML=h+'</div><div class="lg"><em class="da"></em> activity logged &nbsp; <em class="dc"></em> item completed &nbsp; <em class="dr"></em> reminder (amber bar) &nbsp; outlined = today</div>'}
+function renderOv(){const t=ymd(new Date()),d=S.days[sel],na=d?d.activities.length:0,it=items(sel),n=it.length,dn=it.filter(x=>x.done).length;
+ $('#ov').innerHTML=`<h2 class="big">${parse(sel).toLocaleDateString('en',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</h2>
+ <span class="mu">${sel===t?'Today':sel<t?'Past day':'Upcoming day'}${na||n?'':' · no records yet'}</span>
+ <div>${S.reminders.filter(r=>remOn(r,sel)).map(r=>`<span class="bg" style="--h:${RH[r.type]};display:inline-block;margin:6px 6px 0 0">${esc(r.type)}: ${esc(r.title)}</span>`).join('')}</div>
+ <div class="st">${[['Activities',na],['Tasks',n],['Completed',n?dn:'–'],['Pending',n?n-dn:'–'],['Completion',n?Math.round(dn/n*100)+'%':'–']].map(([l,v])=>`<div><b>${v}</b><span>${l}</span></div>`).join('')}</div>`}
+function renderAct(){const L=(S.days[sel]||{}).activities||[];
+ $('#act').innerHTML=`<div class="hd"><h2>Activity journal</h2><button class="b pr" data-a="addAct">+ Add Activity</button></div>`+
+ (L.length?L.map(a=>`<div class="it"><div class="m"><b class="t">${esc(a.title)}</b> <span class="bg" style="--h:${hue(a.cat)}">${esc(a.cat)}</span>${a.time?` <span class="mu">${esc(a.time)}</span>`:''}${a.desc?`<p>${esc(a.desc)}</p>`:''}</div>${btns('Act',a.id)}</div>`).join(''):'<p class="mu">Nothing logged for this date. Add an activity to record what you did.</p>')}
+function renderTd(){const all=items(sel),n=all.length,dn=all.filter(x=>x.done).length,L=all.filter(x=>flt==='all'||(flt==='done')===x.done);
+ $('#td').innerHTML=`<div class="hd"><h2>To-do list</h2><button class="b pr" data-a="addTask">+ Add Task</button></div>
+ <div class="hd" style="margin-bottom:6px"><span>${dn}/${n} completed</span><span class="mu">${n?Math.round(dn/n*100):0}%</span></div><div class="pb"><i style="width:${n?dn/n*100:0}%"></i></div>
+ <div class="tb">${[['all','All'],['pending','Pending'],['done','Completed']].map(([f,l])=>`<button class="${flt===f?'on':''}" data-a="flt" data-f="${f}">${l}</button>`).join('')}</div>`+
+ (L.length?L.map(t=>`<div class="it${t.done?' dn':''}"><input type="checkbox" ${t.done?'checked':''} data-c="tgl" data-id="${t.id}" data-rt="${t.rt?1:0}" aria-label="Mark complete"><div class="m"><span class="t">${esc(t.title)}</span> ${t.rt?'<span class="bg" style="--h:200">Routine</span>':''}${t.pri?` <span class="bg" style="--h:${PH[t.pri]}">${esc(t.pri)}</span>`:''}${t.desc?`<p>${esc(t.desc)}</p>`:''}</div>${t.rt?'':btns('Task',t.id)}</div>`).join(''):`<p class="mu">${n?'No tasks match this filter.':'No tasks for this date. Add one, or enable routine tasks below.'}</p>`)}
+function renderRt(){const L=(S.days[sel]||{}).routine||[];
+ $('#rt').innerHTML=`<div class="hd"><h2>Daily routine</h2><div><button class="b sm" data-a="copyR">Copy previous day</button> <button class="b pr sm" data-a="addR">+ Add</button></div></div>`+
+ (L.length?L.map((r,i)=>`<div class="it${r.done?' dn':''}"><input type="checkbox" ${r.done?'checked':''} data-c="tgl" data-rt="1" data-id="${r.id}" aria-label="Mark complete"><div class="m"><span class="t">${esc(r.title)}</span></div>
+ <button class="b sm" data-a="upR" data-id="${r.id}" ${i?'':'disabled'} aria-label="Move up">↑</button><button class="b sm" data-a="dnR" data-id="${r.id}" ${i<L.length-1?'':'disabled'} aria-label="Move down">↓</button>
+ <button class="b sm" data-a="editR" data-id="${r.id}">Edit</button><button class="b sm" data-a="delR" data-id="${r.id}" aria-label="Remove">✕</button></div>`).join(''):'<p class="mu">Nothing planned for this date. Add tasks, or copy the previous day\'s list.</p>')+
+ '<p class="mu" style="font-size:12px;margin:8px 0 0">This list belongs to the selected date only. Adding, editing or removing tasks never changes other dates.</p>'}
+function streak(id){let n=0,d=parse(sel);if(!((S.days[sel]||{}).hb||{})[id])d.setDate(d.getDate()-1);
+ for(;;d.setDate(d.getDate()-1)){const o=S.days[ymd(d)];if(o&&o.hb&&o.hb[id])n++;else break}return n}
+function renderHb(){const L=S.habits.filter(h=>!h.gone),hb=(S.days[sel]||{}).hb||{},dn=L.filter(h=>hb[h.id]).length;
+ $('#hb').innerHTML=`<div class="hd"><h2>Consistency</h2><button class="b pr sm" data-a="addH">+ Add</button></div><p class="mu" style="margin:0 0 10px;font-size:13px">${L.length?`${dn}/${L.length} done on this date`:''}</p>`+
+ (L.length?L.map(h=>{const s=streak(h.id);return `<div class="it${hb[h.id]?' dn':''}"><input type="checkbox" ${hb[h.id]?'checked':''} data-c="hbt" data-id="${h.id}" aria-label="Done"><div class="m"><span class="t">${esc(h.title)}</span> <small>${s?`${s}-day streak`:''}</small></div><button class="b sm" data-a="editH" data-id="${h.id}">Edit</button><button class="b sm" data-a="delH" data-id="${h.id}" aria-label="Remove">✕</button></div>`}).join(''):'<p class="mu">No habits yet. Add one to start a streak.</p>')}
+function renderRm(){const t=ymd(new Date()),L=S.reminders.map(r=>({r,n:nextOn(r,t)})).filter(x=>x.n>=t||remOn(x.r,sel)).sort((a,b)=>a.n<b.n?-1:1);
+ $('#rm').innerHTML=`<div class="hd"><h2>Reminders</h2><button class="b pr sm" data-a="addRm">+ Add</button></div>`+(L.length?L.map(({r,n})=>{const d=Math.round((parse(n)-parse(t))/864e5);
+  return `<div class="it${remOn(r,sel)?' hl':''}"><div class="m"><b class="t">${esc(r.title)}</b> <span class="bg" style="--h:${RH[r.type]}">${esc(r.type)}</span><p>${parse(n).toLocaleDateString('en',{day:'numeric',month:'short',year:'numeric'})} · ${d<0?'past':d===0?'today':d===1?'tomorrow':`in ${d} days`}${r.yr?' · every year':''}${r.note?` · ${esc(r.note)}`:''}</p></div><button class="b sm" data-a="editRm" data-id="${r.id}">Edit</button><button class="b sm" data-a="delRm" data-id="${r.id}" aria-label="Delete">✕</button></div>`}).join(''):'<p class="mu">No reminders yet. Add birthdays, deadlines or events in advance.</p>')+
+ '<p class="mu" style="font-size:12px;margin:8px 0 0">Days with a reminder get an amber bar and dot on the calendar.</p>'}
+
+/* ---------- Generic modal form ---------- */
+function form(title,fields,cb){const f=$('#fm');
+ f.innerHTML=`<h3>${title}</h3>`+fields.map(x=>`<label>${x.l}${x.req?' *':''}`+
+  (x.t==='area'?`<textarea name="${x.k}" rows="3" maxlength="${x.m||500}">${esc(x.v||'')}</textarea>`:
+   x.t==='sel'?`<select name="${x.k}">${x.o.map(o=>`<option${o===x.v?' selected':''}>${esc(o)}</option>`).join('')}</select>`:
+   `<input${x.ty?` type="${x.ty}"`:''} name="${x.k}" value="${esc(x.v||'')}" maxlength="${x.m||120}" placeholder="${esc(x.p||'')}"${x.req?' required':''}>`)+'</label>').join('')+
+  '<p class="er" id="er"></p><div class="bt"><button type="button" class="b" data-a="cancel">Cancel</button><button class="b pr">Save</button></div>';
+ const cs=f.querySelector('[name=cat]');
+ if(cs)cs.onchange=()=>{if(cs.value!==NEWC)return;const n=(prompt('New category name')||'').trim().slice(0,40);
+  if(n&&!S.categories.includes(n)){S.categories.push(n);save();cs.insertBefore(new Option(n,n),cs.lastChild);cs.value=n}else if(n)cs.value=n;else cs.selectedIndex=0};
+ f.onsubmit=e=>{e.preventDefault();const v=Object.fromEntries(new FormData(f));for(const k in v)v[k]=v[k].trim();
+  for(const x of fields)if(x.req&&!v[x.k]){$('#er').textContent=`${x.l} is required.`;return}
+  dlg.close();cb(v)};
+ dlg.showModal()}
+function actForm(id){const k=sel,a=((S.days[k]||{}).activities||[]).find(x=>x.id===id)||{};
+ form(id?'Edit activity':'Add activity',[{k:'title',l:'Activity title',req:1,v:a.title,p:'e.g. Practised Verilog'},
+  {k:'cat',l:'Category',t:'sel',o:[...S.categories,NEWC],v:a.cat||S.categories[0]},
+  {k:'desc',l:'Brief description (optional)',t:'area',v:a.desc},{k:'time',l:'Time or duration (optional)',v:a.time,p:'e.g. 7–8 pm or 45 min',m:40}],
+  v=>{const L=day(k).activities,o=L.find(x=>x.id===id);if(o)Object.assign(o,v);else L.push({id:uid(),...v});commit()})}
+function taskForm(id){const k=sel,t=(day(k).tasks).find(x=>x.id===id)||{};
+ form(id?'Edit task':'Add task',[{k:'title',l:'Task title',req:1,v:t.title},{k:'pri',l:'Priority (optional)',t:'sel',o:['None','Low','Medium','High'],v:t.pri||'None'},{k:'desc',l:'Short description (optional)',t:'area',v:t.desc,m:300}],
+  v=>{v.pri=v.pri==='None'?'':v.pri;const L=day(k).tasks,o=L.find(x=>x.id===id);if(o)Object.assign(o,v);else L.push({id:uid(),done:false,...v});commit()})}
+function mv(id,dir){const L=day(sel).routine,i=L.findIndex(r=>r.id===id),j=i+dir;if(i<0||j<0||j>=L.length)return;[L[i],L[j]]=[L[j],L[i]];commit()}
+function rmForm(id){const r=S.reminders.find(x=>x.id===id)||{};
+ form(id?'Edit reminder':'Add reminder',[{k:'title',l:'Title',req:1,v:r.title,p:'e.g. Birthday, assignment due'},{k:'date',l:'Date',ty:'date',req:1,v:r.date||sel},
+  {k:'type',l:'Type',t:'sel',o:Object.keys(RH),v:r.type||'Deadline'},{k:'rep',l:'Repeats',t:'sel',o:['Once','Every year'],v:r.yr?'Every year':'Once'},{k:'note',l:'Note (optional)',v:r.note}],
+  v=>{if(!DATE.test(v.date))return;const o={title:v.title,date:v.date,type:v.type,yr:v.rep==='Every year',note:v.note};if(id)Object.assign(r,o);else S.reminders.push({id:uid(),...o});commit()})}
+
+/* ---------- Export / import ---------- */
+function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));
+ a.download=`dayboard-backup-${ymd(new Date())}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+$('#imp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;let o;
+ try{o=JSON.parse(await f.text());if(!valid(o))throw 0;norm(o)}catch(_){return alert('Import failed: this is not a valid DayBoard backup. Nothing was changed.')}
+ if(!confirm(`Import "${f.name}"?\n\nBackup: ${Object.keys(o.days).length} day(s), ${o.reminders.length} reminder(s).\nCurrent: ${Object.keys(S.days).length} day(s), ${S.reminders.length} reminder(s).\n\nThis REPLACES all current data. Export first if you want to keep it.`))return;
+ S=o;save();sel=ymd(new Date());view=parse(sel);view.setDate(1);render()};
+
+/* ---------- Actions (clicks use data-a, checkboxes use data-c) ---------- */
+const A={
+ pm(){view=new Date(view.getFullYear(),view.getMonth()-1,1);renderCal()},
+ nm(){view=new Date(view.getFullYear(),view.getMonth()+1,1);renderCal()},
+ today(){sel=ymd(new Date());view=parse(sel);view.setDate(1);render()},
+ theme(){S.theme=S.theme==='dark'?'light':'dark';commit()},
+ export:exp,pick(){$('#imp').click()},cancel(){dlg.close()},
+ flt(d){flt=d.f;renderTd()},
+ addAct(){actForm()},editAct(d){actForm(d.id)},
+ delAct(d){if(confirm('Delete this activity?')){const x=day(sel);x.activities=x.activities.filter(a=>a.id!==d.id);commit()}},
+ addTask(){taskForm()},editTask(d){taskForm(d.id)},
+ delTask(d){if(confirm('Delete this task?')){const x=day(sel);x.tasks=x.tasks.filter(t=>t.id!==d.id);commit()}},
+ tgl(el){const x=day(sel),id=el.dataset.id,L=el.dataset.rt==='1'?x.routine:x.tasks,t=L.find(t=>t.id===id);if(t)t.done=el.checked;commit()},
+ /* daily routine: every change applies to the selected date only */
+ addR(){const k=sel;form('Add routine task',[{k:'title',l:'Task title',req:1}],v=>{day(k).routine.push({id:uid(),title:v.title,done:false});commit()})},
+ editR(d){const r=day(sel).routine.find(x=>x.id===d.id);form('Edit routine task',[{k:'title',l:'Task title',req:1,v:r.title}],v=>{r.title=v.title;commit()})},
+ delR(d){if(confirm('Remove this task from this date only?')){const x=day(sel);x.routine=x.routine.filter(r=>r.id!==d.id);commit()}},
+ upR(d){mv(d.id,-1)},dnR(d){mv(d.id,1)},
+ copyR(){const p=parse(sel);p.setDate(p.getDate()-1);const src=(S.days[ymd(p)]||{}).routine||[];
+  if(!src.length)return alert('The previous day has no routine tasks to copy.');
+  const L=day(sel).routine,have=new Set(L.map(r=>r.title.toLowerCase()));let n=0;
+  src.forEach(r=>{if(!have.has(r.title.toLowerCase())){L.push({id:uid(),title:r.title,done:false});n++}});
+  if(!n)alert('Everything from the previous day is already on this date.');commit()},
+ /* consistency habits */
+ addH(){form('New consistency habit',[{k:'title',l:'Habit',req:1,p:'e.g. Read 10 pages'}],v=>{S.habits.push({id:uid(),title:v.title});commit()})},
+ editH(d){const h=S.habits.find(x=>x.id===d.id);form('Edit habit',[{k:'title',l:'Habit',req:1,v:h.title}],v=>{h.title=v.title;commit()})},
+ delH(d){if(confirm('Remove this habit? Past check-ins stay in your saved data.')){S.habits.find(x=>x.id===d.id).gone=1;commit()}},
+ hbt(el){const x=day(sel);if(el.checked)x.hb[el.dataset.id]=1;else delete x.hb[el.dataset.id];commit()},
+ /* reminders */
+ addRm(){rmForm()},editRm(d){rmForm(d.id)},
+ delRm(d){if(confirm('Delete this reminder?')){S.reminders=S.reminders.filter(r=>r.id!==d.id);commit()}}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&A[b.dataset.a])return A[b.dataset.a](b.dataset);
+ const d=e.target.closest('[data-k]');if(d){sel=d.dataset.k;render()}});
+document.addEventListener('change',e=>{const c=e.target.dataset&&e.target.dataset.c;if(c&&A[c])A[c](e.target)});
+
+$('#now').textContent=new Date().toLocaleDateString('en',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+render();
+</script></body></html>
